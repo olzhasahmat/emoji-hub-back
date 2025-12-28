@@ -24,9 +24,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // КЛЮЧЕВО: разрешаем preflight
+                        // обязательно разрешаем preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Разрешаем API для фронта
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().permitAll()
                 )
@@ -36,13 +35,17 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of(
-                "http://localhost:*",
-                "https://*.vercel.app"
+
+        // На время диагностики — укажи ТОЧНЫЙ vercel origin (без звёздочек)
+        cfg.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://emoji-hub-vercel-1cx77vtpo-omars-projects-0b19d1a3.vercel.app"
         ));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
-        // ВАЖНО: false, иначе будут нюансы с wildcard/pattern
+
+        // ВАЖНО: false (иначе будут ограничения и конфликты с origin)
         cfg.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
